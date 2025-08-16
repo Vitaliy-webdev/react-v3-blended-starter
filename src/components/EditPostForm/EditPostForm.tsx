@@ -1,11 +1,38 @@
 import * as Yup from "yup";
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { ErrorMessage, Field, Form, Formik, FormikHelpers } from "formik";
 
 import css from "./EditPostForm.module.css";
+import { Post } from "../../types/post";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { editPost } from "../../services/postService";
 
-export default function EditPostForm() {
+interface EditPostFormProps {
+  initialValues: Post;
+  onClose: () => void;
+}
+
+const PostSchema = Yup.object().shape({
+  title: Yup.string().required("title required").min(3).max(50),
+  body: Yup.string().required("body required").min(3).max(50),
+});
+
+export default function EditPostForm({ initialValues, onClose }: EditPostFormProps) {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: editPost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+
+  const handleSubmit = (values: Post, actions: FormikHelpers<Post>) => {
+    mutation.mutate(values);
+    onClose();
+    actions.resetForm();
+  };
   return (
-    <Formik initialValues={} onSubmit={} validationSchema={}>
+    <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={PostSchema}>
       <Form className={css.form}>
         <div className={css.formGroup}>
           <label htmlFor="title">Title</label>
@@ -23,7 +50,7 @@ export default function EditPostForm() {
           <button type="button" className={css.cancelButton}>
             Cancel
           </button>
-          <button type="submit" className={css.submitButton} disabled={}>
+          <button type="submit" className={css.submitButton}>
             Edit post
           </button>
         </div>
