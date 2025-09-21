@@ -27,7 +27,7 @@ export default function Form({ onSubmit }: FormProps) {
       />
 
       <button className={style.button} type="submit">
-        <FiSearch size="16px" />
+        <FiSearch size="17px" />
       </button>
     </form>
   );
